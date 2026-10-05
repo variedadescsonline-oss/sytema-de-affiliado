@@ -1,0 +1,290 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Primitives
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email in [
+          'afiliacion.variedadescs@gmail.com',
+          'variedades.online@gmail.com',
+          'urielroques604@gmail.com',
+          'angeles9224sg@gmail.com',
+          'variedadescs.online@gmail.com',
+          'variedadescs@gmail.com'
+        ]) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Entity Validators
+    function isValidProduct(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.barcode is string && data.barcode.size() <= 64 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.stock is number &&
+             data.active is bool &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500000));
+    }
+
+    function isValidCategory(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.code is string && data.code.size() <= 30 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.active is bool;
+    }
+
+    function isValidClient(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.document is string && data.document.size() <= 50 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.active is bool;
+    }
+
+    function isValidSupplier(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.active is bool;
+    }
+
+    function isValidSale(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.invoiceNumber is string && data.invoiceNumber.size() <= 60 &&
+             data.date is string && data.date.size() <= 30 &&
+             data.total is number && data.total >= 0 &&
+             data.paymentMethod in ['Efectivo', 'Tarjeta', 'Transferencia', 'Crédito'] &&
+             data.status in ['Completada', 'Anulada'] &&
+             data.items is list && data.items.size() <= 100;
+    }
+
+    function isValidPurchase(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.referenceNumber is string && data.referenceNumber.size() <= 60 &&
+             data.total is number && data.total >= 0 &&
+             data.status in ['Recibida', 'Anulada'] &&
+             data.items is list && data.items.size() <= 100;
+    }
+
+    function isValidCreditAccount(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.clientId is string && data.clientId.size() <= 128 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.balance is number &&
+             data.status in ['Vigente', 'Vencido', 'Pagado'];
+    }
+
+    function isValidCashMovement(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.date is string && data.date.size() <= 30 &&
+             data.type in ['Ingreso', 'Egreso'] &&
+             data.amount is number && data.amount >= 0 &&
+             data.user is string && data.user.size() <= 100;
+    }
+
+    function isValidCashSession(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.openedAt is string && data.openedAt.size() <= 50 &&
+             data.cashierName is string && data.cashierName.size() <= 100 &&
+             data.openingBalance is number && data.openingBalance >= 0 &&
+             data.status in ['Abierta', 'Cerrada'];
+    }
+
+    function isValidInventoryMovement(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.productId is string && data.productId.size() <= 128 &&
+             data.type in ['Entrada', 'Salida', 'Ajuste Positivo', 'Ajuste Negativo', 'Devolución'] &&
+             data.quantity is number &&
+             data.newStock is number &&
+             data.user is string && data.user.size() <= 100;
+    }
+
+    function isValidReturnRecord(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.returnNumber is string && data.returnNumber.size() <= 60 &&
+             data.productId is string && data.productId.size() <= 128 &&
+             data.quantity is number && data.quantity > 0 &&
+             data.status in ['Procesada', 'Anulada'];
+    }
+
+    function isValidAuditEntry(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.timestamp is string && data.timestamp.size() <= 50 &&
+             data.user is string && data.user.size() <= 100 &&
+             data.module is string && data.module.size() <= 50 &&
+             data.action is string && data.action.size() <= 100 &&
+             data.detail is string && data.detail.size() <= 600 &&
+             data.severity in ['Normal', 'Advertencia', 'Crítico'];
+    }
+
+    function isValidCompanyConfig(data) {
+      return data.companyName is string && data.companyName.size() > 0 && data.companyName.size() <= 150 &&
+             data.taxId is string && data.taxId.size() <= 60 &&
+             data.currencySymbol is string && data.currencySymbol.size() <= 10 &&
+             data.taxRatePercent is number && data.taxRatePercent >= 0;
+    }
+
+    function isValidSystemUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.username is string && data.username.size() > 0 && data.username.size() <= 60 &&
+             data.fullName is string && data.fullName.size() <= 120 &&
+             data.role in ['Administrador', 'Supervisor', 'Cajero', 'Almacén', 'Afiliado'] &&
+             data.active is bool &&
+             (!('pin' in data) || (data.pin is string && data.pin.size() <= 100)) &&
+             (!('cedula' in data) || (data.cedula is string && data.cedula.size() <= 60)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 300));
+    }
+
+    function isValidAffiliateOrder(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.orderNumber is string && data.orderNumber.size() <= 60 &&
+             data.date is string && data.date.size() <= 30 &&
+             data.customerName is string && data.customerName.size() > 0 && data.customerName.size() <= 150 &&
+             data.customerAddress is string && data.customerAddress.size() <= 300 &&
+             data.affiliateName is string && data.affiliateName.size() <= 150 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['Pendiente', 'Aprobado', 'En Camino', 'Entregado', 'Cancelado'] &&
+             data.items is list && data.items.size() <= 100;
+    }
+
+    // 1. Products Collection
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == productId;
+      allow delete: if isValidId(productId);
+    }
+
+    // 2. Categories Collection
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(categoryId) && isValidCategory(incoming()) && incoming().id == categoryId;
+      allow delete: if isValidId(categoryId);
+    }
+
+    // 3. Clients Collection
+    match /clients/{clientId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(clientId) && isValidClient(incoming()) && incoming().id == clientId;
+      allow delete: if isValidId(clientId);
+    }
+
+    // 4. Suppliers Collection
+    match /suppliers/{supplierId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(supplierId) && isValidSupplier(incoming()) && incoming().id == supplierId;
+      allow delete: if isValidId(supplierId);
+    }
+
+    // 5. Sales Collection
+    match /sales/{saleId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(saleId) && isValidSale(incoming()) && incoming().id == saleId;
+      allow delete: if isValidId(saleId);
+    }
+
+    // 6. Purchases Collection
+    match /purchases/{purchaseId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(purchaseId) && isValidPurchase(incoming()) && incoming().id == purchaseId;
+      allow delete: if isValidId(purchaseId);
+    }
+
+    // 7. Credit Accounts Collection
+    match /credits/{creditId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(creditId) && isValidCreditAccount(incoming()) && incoming().id == creditId;
+      allow delete: if isValidId(creditId);
+    }
+
+    // 8. Cash Movements Collection
+    match /cashMovements/{movementId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(movementId) && isValidCashMovement(incoming());
+    }
+
+    // 9. Cash Sessions Collection
+    match /cashSessions/{sessionId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(sessionId) && isValidCashSession(incoming()) && incoming().id == sessionId;
+      allow delete: if isValidId(sessionId);
+    }
+
+    // 10. Inventory Movements Collection
+    match /inventoryMovements/{invMovementId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(invMovementId) && isValidInventoryMovement(incoming()) && incoming().id == invMovementId;
+      allow delete: if isValidId(invMovementId);
+    }
+
+    // 11. Returns Collection
+    match /returns/{returnId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(returnId) && isValidReturnRecord(incoming()) && incoming().id == returnId;
+      allow delete: if isValidId(returnId);
+    }
+
+    // 12. Users Collection
+    match /users/{userId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(userId) && isValidSystemUser(incoming()) && incoming().id == userId;
+      allow delete: if isValidId(userId);
+    }
+
+    // 13. Audit Entries Collection (Strictly Append-Only)
+    match /auditEntries/{auditId} {
+      allow get, list: if true;
+      allow create: if isValidId(auditId) && isValidAuditEntry(incoming()) && incoming().id == auditId;
+      allow update, delete: if false; // Universal immutability
+    }
+
+    // 14. Company Configuration Document
+    match /config/company {
+      allow get, list, create, update: if true;
+      allow delete: if true;
+    }
+
+    // 15. Super Admins Collection
+    match /admins/{adminId} {
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 16. Connection probe
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // 17. Remote Barcode Scanner Sessions (phone pairing)
+    match /remoteScanners/{sessionId} {
+      allow read, write: if isValidId(sessionId);
+    }
+
+    // 18. Affiliate Orders Collection (Pedidos de Afiliados)
+    match /affiliateOrders/{orderId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(orderId) && isValidAffiliateOrder(incoming()) && incoming().id == orderId;
+      allow delete: if isValidId(orderId);
+    }
+  }
+}

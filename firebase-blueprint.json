@@ -1,0 +1,384 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product item in Variedades CS ERP",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "sku": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 200 },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "categoryName": { "type": "string", "maxLength": 100 },
+        "supplierId": { "type": "string", "maxLength": 128 },
+        "supplierName": { "type": "string", "maxLength": 100 },
+        "cost": { "type": "number" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 30 },
+        "location": { "type": "string", "maxLength": 100 },
+        "imageUrl": { "type": "string", "maxLength": 500000 },
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "barcode", "name", "price", "stock", "active"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category classification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "code": { "type": "string", "maxLength": 30 },
+        "name": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "code", "name", "active"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Customer record for billing and credit management",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "document": { "type": "string", "maxLength": 50 },
+        "name": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 120 },
+        "address": { "type": "string", "maxLength": 200 },
+        "creditLimit": { "type": "number" },
+        "currentBalance": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "document", "name", "active"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Vendor providing merchandise and goods",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "taxId": { "type": "string", "maxLength": 50 },
+        "name": { "type": "string", "maxLength": 150 },
+        "contactPerson": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 120 },
+        "address": { "type": "string", "maxLength": 200 },
+        "categorySpecialty": { "type": "string", "maxLength": 100 },
+        "paymentTerms": { "type": "string", "maxLength": 100 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "active"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "POS or invoice sale transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "invoiceNumber": { "type": "string", "maxLength": 60 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "sellerId": { "type": "string", "maxLength": 128 },
+        "sellerName": { "type": "string", "maxLength": 100 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 150 },
+        "clientDocument": { "type": "string", "maxLength": 50 },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "discountTotal": { "type": "number" },
+        "taxTotal": { "type": "number" },
+        "total": { "type": "number" },
+        "profit": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Efectivo", "Tarjeta", "Transferencia", "Crédito"] },
+        "amountReceived": { "type": "number" },
+        "change": { "type": "number" },
+        "status": { "type": "string", "enum": ["Completada", "Anulada"] },
+        "cancelReason": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["id", "invoiceNumber", "date", "total", "paymentMethod", "status"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "Purchase order from vendor to replenish inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referenceNumber": { "type": "string", "maxLength": 60 },
+        "supplierInvoice": { "type": "string", "maxLength": 60 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "supplierId": { "type": "string", "maxLength": 128 },
+        "supplierName": { "type": "string", "maxLength": 150 },
+        "buyerName": { "type": "string", "maxLength": 100 },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["Recibida", "Anulada"] },
+        "notes": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["id", "referenceNumber", "total", "status"]
+    },
+    "CreditAccount": {
+      "title": "CreditAccount",
+      "description": "Customer portfolio credit receivable account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "saleId": { "type": "string", "maxLength": 128 },
+        "invoiceNumber": { "type": "string", "maxLength": 60 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 150 },
+        "clientPhone": { "type": "string", "maxLength": 50 },
+        "issueDate": { "type": "string", "maxLength": 30 },
+        "dueDate": { "type": "string", "maxLength": 30 },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "balance": { "type": "number" },
+        "status": { "type": "string", "enum": ["Vigente", "Vencido", "Pagado"] },
+        "payments": { "type": "array" }
+      },
+      "required": ["id", "clientId", "totalAmount", "balance", "status"]
+    },
+    "CashMovement": {
+      "title": "CashMovement",
+      "description": "Cash register inflow or outflow movement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "type": { "type": "string", "enum": ["Ingreso", "Egreso"] },
+        "category": { "type": "string", "maxLength": 50 },
+        "paymentMethod": { "type": "string", "maxLength": 50 },
+        "reference": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "amount": { "type": "number" },
+        "user": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "date", "type", "amount", "user"]
+    },
+    "CashSession": {
+      "title": "CashSession",
+      "description": "Cash drawer opening and closing shift session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "openedAt": { "type": "string", "maxLength": 50 },
+        "closedAt": { "type": "string", "maxLength": 50 },
+        "cashierName": { "type": "string", "maxLength": 100 },
+        "openingBalance": { "type": "number" },
+        "status": { "type": "string", "enum": ["Abierta", "Cerrada"] },
+        "countedCash": { "type": "number" },
+        "difference": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 400 }
+      },
+      "required": ["id", "openedAt", "cashierName", "openingBalance", "status"]
+    },
+    "InventoryMovement": {
+      "title": "InventoryMovement",
+      "description": "Stock audit trail entry for product quantity movements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "productName": { "type": "string", "maxLength": 200 },
+        "type": { "type": "string", "enum": ["Entrada", "Salida", "Ajuste Positivo", "Ajuste Negativo", "Devolución"] },
+        "quantity": { "type": "number" },
+        "previousStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "reference": { "type": "string", "maxLength": 100 },
+        "reason": { "type": "string", "maxLength": 300 },
+        "user": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "productId", "type", "quantity", "newStock", "user"]
+    },
+    "ReturnRecord": {
+      "title": "ReturnRecord",
+      "description": "Customer product return or refund receipt",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "returnNumber": { "type": "string", "maxLength": 60 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "saleInvoice": { "type": "string", "maxLength": 60 },
+        "clientName": { "type": "string", "maxLength": 150 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 200 },
+        "quantity": { "type": "number" },
+        "refundAmount": { "type": "number" },
+        "reason": { "type": "string", "maxLength": 300 },
+        "restockInventory": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["Procesada", "Anulada"] },
+        "processedBy": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "returnNumber", "productId", "quantity", "status"]
+    },
+    "SystemUser": {
+      "title": "SystemUser",
+      "description": "Enterprise staff user profile and role definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "username": { "type": "string", "maxLength": 60 },
+        "fullName": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["Administrador", "Supervisor", "Cajero", "Almacén"] },
+        "email": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "branch": { "type": "string", "maxLength": 100 },
+        "active": { "type": "boolean" },
+        "lastLogin": { "type": "string", "maxLength": 50 },
+        "pin": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "username", "fullName", "role", "active"]
+    },
+    "RemoteScanner": {
+      "title": "RemoteScanner",
+      "description": "Remote smartphone camera barcode scan session event",
+      "type": "object",
+      "properties": {
+        "lastBarcode": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "number" },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["lastBarcode", "timestamp"]
+    },
+    "AuditEntry": {
+      "title": "AuditEntry",
+      "description": "Immutable security and operations audit log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "timestamp": { "type": "string", "maxLength": 50 },
+        "user": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "maxLength": 50 },
+        "module": { "type": "string", "maxLength": 50 },
+        "action": { "type": "string", "maxLength": 100 },
+        "detail": { "type": "string", "maxLength": 600 },
+        "severity": { "type": "string", "enum": ["Normal", "Advertencia", "Crítico"] }
+      },
+      "required": ["id", "timestamp", "user", "module", "action", "detail", "severity"]
+    },
+    "CompanyConfig": {
+      "title": "CompanyConfig",
+      "description": "Global enterprise parameters, tax rules, and receipt header configuration",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string", "maxLength": 150 },
+        "subtitle": { "type": "string", "maxLength": 150 },
+        "taxId": { "type": "string", "maxLength": 60 },
+        "address": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 80 },
+        "email": { "type": "string", "maxLength": 120 },
+        "currencySymbol": { "type": "string", "maxLength": 10 },
+        "currencyCode": { "type": "string", "maxLength": 10 },
+        "taxRatePercent": { "type": "number" },
+        "pricesIncludeTax": { "type": "boolean" },
+        "invoicePrefix": { "type": "string", "maxLength": 20 },
+        "receiptFooter": { "type": "string", "maxLength": 400 },
+        "defaultLowStockThreshold": { "type": "number" },
+        "requireClientForCredit": { "type": "boolean" }
+      },
+      "required": ["companyName", "taxId", "currencySymbol", "taxRatePercent"]
+    },
+    "AffiliateOrder": {
+      "title": "AffiliateOrder",
+      "description": "Customer order placed by registered affiliate/seller",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderNumber": { "type": "string", "maxLength": 60 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "affiliateId": { "type": "string", "maxLength": 128 },
+        "affiliateName": { "type": "string", "maxLength": 150 },
+        "affiliateEmail": { "type": "string", "maxLength": 120 },
+        "customerName": { "type": "string", "maxLength": 150 },
+        "customerAddress": { "type": "string", "maxLength": 300 },
+        "customerPhone": { "type": "string", "maxLength": 50 },
+        "totalAmount": { "type": "number" },
+        "baseTotal": { "type": "number" },
+        "affiliateCommissionTotal": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pendiente", "Aprobado", "En Camino", "Entregado", "Cancelado"] }
+      },
+      "required": ["id", "orderNumber", "affiliateId", "customerName", "customerAddress", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Inventory product catalog"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Product classification categories"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Registered clients and credit customers"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Registered suppliers and distributors"
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Sales invoices and POS transactions"
+    },
+    "/purchases/{purchaseId}": {
+      "schema": "Purchase",
+      "description": "Supply purchases and vendor receipts"
+    },
+    "/credits/{creditId}": {
+      "schema": "CreditAccount",
+      "description": "Receivable customer credit portfolios"
+    },
+    "/cashMovements/{movementId}": {
+      "schema": "CashMovement",
+      "description": "Cash register inflows and outflows"
+    },
+    "/cashSessions/{sessionId}": {
+      "schema": "CashSession",
+      "description": "Cash register shift sessions"
+    },
+    "/inventoryMovements/{invMovementId}": {
+      "schema": "InventoryMovement",
+      "description": "Auditable stock level movements and adjustments"
+    },
+    "/returns/{returnId}": {
+      "schema": "ReturnRecord",
+      "description": "Customer return and refund records"
+    },
+    "/users/{userId}": {
+      "schema": "SystemUser",
+      "description": "System user profiles and roles"
+    },
+    "/auditEntries/{auditId}": {
+      "schema": "AuditEntry",
+      "description": "Security and activity audit entries"
+    },
+    "/config/company": {
+      "schema": "CompanyConfig",
+      "description": "Business settings, header, and POS configuration"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "SystemUser" },
+      "description": "Super admin verified identifiers"
+    },
+    "/remoteScanners/{sessionId}": {
+      "schema": "RemoteScanner",
+      "description": "Wireless remote camera barcode scan session messages"
+    },
+    "/affiliateOrders/{orderId}": {
+      "schema": "AffiliateOrder",
+      "description": "Customer orders submitted by registered affiliates"
+    }
+  }
+}

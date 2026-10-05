@@ -1,0 +1,6 @@
+{
+  "name": "VARIEDADES CS - Sistema de Inventario, Ventas y Administración",
+  "description": "Software empresarial profesional de inventario, punto de venta (POS), facturación, control de caja, créditos y administración para VARIEDADES CS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
